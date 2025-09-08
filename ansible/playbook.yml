@@ -1,0 +1,7 @@
+- name: Deploy Blue-X Dashboard
+  hosts: bluex_servers
+  become: yes
+  vars:
+    bluex_install_dir: /opt/bluex
+  roles:
+    - bluex_app

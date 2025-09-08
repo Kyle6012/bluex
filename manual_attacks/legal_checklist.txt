@@ -1,0 +1,6 @@
+LEGAL & AUTHORIZATION CHECKLIST
+- Confirm written authorization signed by asset owner and legal counsel.
+- Define scope: target devices, time window, accepted techniques, and data handling rules.
+- Define safety measures: RF isolation, fallback kill-switch, and escalation path.
+- Agree on evidence handling and reporting format.
+- Assign responsible persons and emergency contacts.

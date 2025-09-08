@@ -1,0 +1,13 @@
+<!doctype html>
+<html><body>
+<h1>Instructor Dashboard</h1>
+<p><a href='/'>Back</a></p>
+<h2>Student Reports</h2>
+<ul>
+{% for f in files %}<li>{{f}}</li>{% endfor %}
+</ul>
+<h2>Release Grade</h2>
+<form method="post" action="/instructor/release">
+Student: <input name="student"><br>Module: <input name="module"><br>Grade: <input name="grade"><br><button>Release</button>
+</form>
+</body></html>

@@ -1,0 +1,84 @@
+---
+# tasks/main.yml for bluex_app - deploy Blue-X package to target hosts
+- name: Ensure target directory exists
+  file:
+    path: "{{ bluex_install_dir | default('/opt/bluex') }}"
+    state: directory
+    owner: "{{ bluex_user | default('root') }}"
+    group: "{{ bluex_group | default('root') }}"
+    mode: '0755'
+
+- name: Upload Blue-X zip to remote host
+  copy:
+    src: "{{ bluex_package_local_path }}"
+    dest: "/tmp/bluex_safe_sim.zip"
+    mode: '0644'
+
+- name: Unpack Blue-X zip to install dir
+  unarchive:
+    src: "/tmp/bluex_safe_sim.zip"
+    dest: "{{ bluex_install_dir | default('/opt/bluex') }}"
+    remote_src: yes
+    owner: "{{ bluex_user | default('root') }}"
+    group: "{{ bluex_group | default('root') }}"
+
+- name: Ensure python3-venv and pip installed (Debian/Ubuntu)
+  apt:
+    name: "{{ item }}"
+    state: present
+  become: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  loop:
+    - python3-venv
+    - python3-pip
+  when: ansible_os_family == 'Debian'
+
+- name: Create virtualenv
+  command: python3 -m venv {{ bluex_install_dir }}/venv
+  args:
+    creates: "{{ bluex_install_dir }}/venv/bin/activate"
+
+- name: Install pip requirements in venv
+  pip:
+    requirements: "{{ bluex_install_dir }}/requirements.txt"
+    virtualenv: "{{ bluex_install_dir }}/venv"
+    virtualenv_site_packages: no
+
+- name: Ensure logs and sessions directories exist
+  file:
+    path: "{{ bluex_install_dir }}/{{ item }}"
+    state: directory
+    owner: "{{ bluex_user | default('root') }}"
+    group: "{{ bluex_group | default('root') }}"
+    mode: '0755'
+  loop:
+    - logs
+    - sessions
+    - reports
+    - config
+
+- name: Copy systemd unit files
+  copy:
+    src: "{{ bluex_install_dir }}/systemd/"
+    dest: /etc/systemd/system/
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Reload systemd and enable timer and service
+  systemd:
+    daemon_reload: yes
+
+- name: Enable and start export timer
+  systemd:
+    name: bluex_export.timer
+    enabled: yes
+    state: started
+
+- name: Ensure application permissions
+  file:
+    path: "{{ bluex_install_dir }}"
+    recurse: yes
+    owner: "{{ bluex_user | default('root') }}"
+    group: "{{ bluex_group | default('root') }}"

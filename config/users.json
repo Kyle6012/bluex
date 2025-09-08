@@ -1,0 +1,12 @@
+{
+  "instructor": {
+    "salt": "bc83c1a32709b58abf4b4282e21b0e89",
+    "hash": "6b1346b2d2156c26d2bc04f80b724d42db89c92b9d5b0ba04a78f9b158e472df",
+    "role": "instructor"
+  },
+  "redteam": {
+    "salt": "14370e7e94c1994b901fc2e41c5a2961",
+    "hash": "3220b320f81ef9299ea02d3882ff9c45935c1c0bf967fa7a92c1f3d0e122300f",
+    "role": "redteam"
+  }
+}

@@ -1,0 +1,6 @@
+HARDWARE & LAB SAFETY CHECKLIST
+- Use an isolated test network and dedicated test host.
+- Use a Faraday cage or RF shield when performing broad-spectrum tests.
+- Ensure proper drivers and firmware installed for Ubertooth/btlejack; verify in offline environment.
+- Ensure USB hubs and power supplies are safe and isolated.
+- Keep a physical power kill-switch for devices under test.

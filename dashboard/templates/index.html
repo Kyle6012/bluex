@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='utf-8'>
+<title>Blue-X Safe Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>body{font-family:Arial; margin:20px} #filters{margin-bottom:10px}</style>
+</head>
+<body>
+<h1>Blue-X Safe Dashboard</h1>
+<p><a href="/logout">Logout</a></p>
+<div id="filters">
+  <label>Module Filter: <input id="modfilter" oninput="renderList()" placeholder="e.g., SIM_MITM"></label>
+  <button onclick="downloadCSV()">Download CSV</button>
+</div>
+<ul id="files"></ul>
+<h2>Timeline</h2>
+<canvas id="timeline" width="800" height="150"></canvas>
+<canvas id="chart" width="800" height="200"></canvas>
+<pre id="out" style="background:#f7f7f7;padding:10px"></pre>
+<script>
+let files={{ files|tojson }};
+function renderList(){
+  const f=document.getElementById('modfilter').value.toLowerCase();
+  const list=document.getElementById('files'); list.innerHTML='';
+  files.filter(fn=>fn.toLowerCase().includes(f)).forEach(fn=>{
+    const li=document.createElement('li');
+    const a=document.createElement('a'); a.href='#'; a.textContent=fn; a.onclick=()=>{loadReport(fn);return false};
+    li.appendChild(a); list.appendChild(li);
+  });
+}
+async function loadReport(name){
+  const res=await fetch('/report/'+name); const j=await res.json();
+  document.getElementById('out').textContent=JSON.stringify(j,null,2);
+  // update chart with simple metric if available
+  const labels=[]; const data=[];
+  if(j.profiles){
+    labels.push(...j.profiles.map(p=>p.name)); data.push(...j.profiles.map(p=>p.cases||p.tested||0));
+  } else if(j.steps){
+    labels.push(...j.steps.map(s=>s.step)); data.push(...j.steps.map(s=>1));
+  } else {
+    labels.push('items'); data.push(1);
+  }
+  updateChart(labels,data);
+}
+function updateChart(labels,data){
+  if(window.myChart){ window.myChart.data.labels=labels; window.myChart.data.datasets[0].data=data; window.myChart.update(); return; }
+  const ctx=document.getElementById('chart').getContext('2d');
+  window.myChart=new Chart(ctx,{type:'bar',data:{labels:labels,datasets:[{label:'Metric',data:data}]}});
+}
+function updateTimeline(data){
+  const ctx=document.getElementById('timeline').getContext('2d');
+  const labels=data.map(d=>d.file);
+  const values=data.map(d=>d.ts);
+  if(window.timelineChart){ window.timelineChart.data.labels=labels; window.timelineChart.data.datasets[0].data=values; window.timelineChart.update(); return; }
+  window.timelineChart=new Chart(ctx,{type:'line',data:{labels:labels,datasets:[{label:'Timestamp',data:values,fill:false}]}});
+}
+async function loadTimeline(){ const res=await fetch('/timeline_data'); const j=await res.json(); updateTimeline(j); }
+function downloadCSV(){ window.location='/csv'; }
+renderList(); loadTimeline();
+</script>
+</body>
+</html>

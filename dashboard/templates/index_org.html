@@ -1,0 +1,10 @@
+<!doctype html>
+<html><body>
+<h1>Blue-X Org Dashboard</h1>
+<p>Welcome {{ session.get('user') }}</p>
+<p><a href="/practice">Practice Mode</a> | <a href="/instructor">Instructor</a> | <a href="/orgs">Orgs</a> | <a href="/logout">Logout</a></p>
+<h2>Organizations</h2>
+<ul>
+{% for o in orgs %}<li>{{o.name}} (code: {{o.code}})</li>{% endfor %}
+</ul>
+</body></html>

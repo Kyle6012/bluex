@@ -1,0 +1,9 @@
+[Unit]
+Description=Blue-X Export Audit Service
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/bluex
+ExecStart=/opt/bluex/tools/export_audit_signed_encrypt.py /opt/bluex/reports/audit_export_$(date +%%s).tar.gz.enc
+User=root

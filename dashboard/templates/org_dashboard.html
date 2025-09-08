@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<h1>Org Dashboard - {{ org.name }} ({{ org.code }})</h1>
+<p><a href="/">Back</a></p>
+<ul>
+  <li>Usage events: {{ metrics.usage_count }}</li>
+  <li>Student submissions: {{ metrics.submissions }}</li>
+  <li>Practice submissions: {{ metrics.practice_submissions }}</li>
+  <li>Last activity ts: {{ metrics.last_activity }}</li>
+</ul>
+<button onclick="loadTrends()">Load 30-day activity</button>
+<canvas id="trendChart" width="800" height="200"></canvas>
+<hr>
+<button onclick="loadHourly()">Load last 48h hourly</button>
+<canvas id="hourChart" width="800" height="200"></canvas>
+<hr>
+<button onclick="loadHeatmap()">Load 14-day heatmap</button>
+<canvas id="heatmap" width="800" height="400"></canvas>
+<hr>
+<button onclick="scheduleReport()">Schedule & Email Report</button>
+<p id="schedstatus"></p>
+<p><a id="exportCsv" href="">Download CSV</a> | <a id="exportXlsx" href="">Download XLSX</a></p>
+<script>
+function loadTrends(){ fetch('/org/{{ org.code }}/trends').then(r=>r.json()).then(j=>{ const ctx=document.getElementById('trendChart').getContext('2d'); new Chart(ctx,{type:'line',data:{labels:j.labels,datasets:[{label:'Events',data:j.counts}]}}) }); document.getElementById('exportCsv').href='/org/{{ org.code }}/export?fmt=csv'; document.getElementById('exportXlsx').href='/org/{{ org.code }}/export?fmt=xlsx'; }
+function loadHourly(){ fetch('/org/{{ org.code }}/hourly').then(r=>r.json()).then(j=>{ const ctx=document.getElementById('hourChart').getContext('2d'); new Chart(ctx,{type:'bar',data:{labels:j.labels,datasets:[{label:'Events',data:j.counts}]}}) }); }
+function loadHeatmap(){ fetch('/org/{{ org.code }}/heatmap').then(r=>r.json()).then(j=>{ // simple heatmap rendering via canvas
+  const canvas=document.getElementById('heatmap'); const ctx=canvas.getContext('2d'); const rows=j.matrix.length; const cols=j.matrix[0].length; const cellW=canvas.width/cols; const cellH=canvas.height/rows; const max = Math.max(...j.matrix.flat()); for(let r=0;r<rows;r++){ for(let c=0;c<cols;c++){ const v=j.matrix[r][c]; const intensity = max?Math.round(255*(v/max)):0; ctx.fillStyle='rgb('+intensity+',0,'+(255-intensity)+')'; ctx.fillRect(c*cellW, r*cellH, cellW, cellH); }} }); }
+function scheduleReport(){ fetch('/org/{{ org.code }}/schedule_report',{method:'POST'}).then(r=>r.json()).then(j=>{ document.getElementById('schedstatus').textContent='Scheduled'; }) }
+</script>
+</body>
+</html>

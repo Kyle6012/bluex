@@ -1,0 +1,7 @@
+Flask
+requests
+pandas
+openpyxl
+reportlab
+pdfkit
+python-ldap
